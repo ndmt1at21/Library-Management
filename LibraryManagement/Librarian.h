@@ -11,10 +11,10 @@ class Librarian :public Account
 {
 public:
 	void addBookItem(BookItem bookItem);
-	bool modifyBook(BookItem bookItemMod);
+	bool modifyBook(string barcode);
 	bool removeBook(string barCode);
 	bool blockMember(string id);
-	bool unblockMember(Member member);
+	bool unblockMember(string id);
 
 	size_t getNumberOfMember();
 	bool searchMember(string id);

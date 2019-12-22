@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <iomanip>
 #include "MyDefine.h"
 
 using std::string;
@@ -26,8 +27,14 @@ public:
 	string getISBN();
 	string getTitle();
 	string getPublisher();
+	string getLanguage();
+	uint32_t getNumberOfPages();
+	BookFormat getBookFormat();
+	std::vector<string> getAuthorsName();
 
 	friend std::istream& operator>>(std::istream& in, Book& book);
+	friend std::ifstream& operator>>(std::ifstream& in, Book& book);
 	friend std::ostream& operator<<(std::ostream& out, const Book& book);
+	friend std::ofstream& operator<<(std::ofstream& out, const Book& book);
 };
 

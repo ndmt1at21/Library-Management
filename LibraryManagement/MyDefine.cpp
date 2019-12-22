@@ -1,4 +1,5 @@
 #include "MyDefine.h"
+#include "StringProcess.h"
 
 Address::Address() {}
 
@@ -16,10 +17,35 @@ Address::Address(const Address& other)
 
 std::istream& operator>>(std::istream& in, Address& address)
 {
-	std::cout << "Thanh pho hien tai: ";
-	std::getline(in, address._city, '\n');
+	while (true)
+	{
+		std::cout << "Thanh pho hien tai: ";
+		std::getline(in, address._city, '\n');
 
-	std::cout << "Dia chi cu the: ";
+		if (address._city.size() != 0)
+			break;
+		else 
+			ShowError("Vui long nhap thanh pho");
+	}
+	
+
+	while (true)
+	{
+		std::cout << "Dia chi cu the: ";
+		std::getline(in, address._streetAddress, '\n');
+
+		if (address._streetAddress.size() != 0)
+			break;
+		else
+			ShowError("Vui long nhap thanh pho");
+	}
+
+	return in;
+}
+
+std::ifstream& operator>>(std::ifstream& in, Address& address)
+{
+	std::getline(in, address._city, '\n');
 	std::getline(in, address._streetAddress, '\n');
 
 	return in;
@@ -49,14 +75,50 @@ Person::Person(const Person& person)
 std::istream& operator>>(std::istream& in, Person& person)
 {
 	std::cout << "Ho va ten: ";
-	std::getline(in, person._name, '\n');
+	
+	while (true)
+	{
+		std::getline(in, person._name, '\n');
 
+		if (person._name.size() != 0)
+			break;
+		else
+			ShowError("Ten khong the bo trong\n");
+	}
+	
 	in >> person._address;
 
-	std::cout << "Email: ";
-	std::getline(in, person._email, '\n');
+	while (true)
+	{
+		std::cout << "Email: ";
+		std::getline(in, person._email, '\n');
 
-	std::cout << "SDT: ";
+		if (person._email.size() <= 3 || person._email.find('@') == std::string::npos)
+			ShowError("Email ban nhap khong hop le\n");
+		else
+			break;
+	}
+
+
+	while (true)
+	{
+		std::cout << "SDT: ";
+		std::getline(in, person._phone, '\n');
+
+		if (!isAllDigit(person._phone) || person._phone.size() > 12 || person._phone.size() < 9)
+			ShowError("So ban nhap khong dung\n");
+		else break;
+	}
+	
+
+	return in;
+}
+
+std::ifstream& operator>>(std::ifstream& in, Person& person)
+{
+	std::getline(in, person._name, '\n');
+	in >> person._address;
+	std::getline(in, person._email, '\n');
 	std::getline(in, person._phone, '\n');
 
 	return in;

@@ -4,45 +4,45 @@
 
 void Librarian::addBookItem(BookItem bookItem)
 {
-	std::fstream file_book(link_book_information, std::fstream::in | std::fstream::out | std::fstream::app);
+	std::ofstream file_book(link_book_information, std::ios::app);
 	if (file_book.fail())
 		throw std::exception("data not found");
 
-	size_t numBooks = 0;
-	file_book >> numBooks;
-	file_book.get();
-
-	numBooks++;
-	file_book << bookItem;
-	file_book.seekp(0, std::fstream::beg);
-	file_book << numBooks;
+	if (File::is_empty_file(file_book))
+		file_book << bookItem;
+	else file_book << '\n' << bookItem;
 }
 
-bool Librarian::modifyBook(BookItem bookItemMod)
+bool Librarian::modifyBook(string barcode)
 {
 	std::ifstream infile_book(link_book_information);
 	if (infile_book.fail())
 		throw std::exception("data not found");
 
-	size_t numBooks = 0;
-	infile_book >> numBooks;
-
 	std::string linkTemp = Directory::getDir(link_book_information) + "tmp.txt";
-	std::ofstream outfile_book(linkTemp);
+	std::ofstream temp(linkTemp);
 
 	BookItem search;
 	bool isFound = false;
-	for (size_t i = 0; i < numBooks; i++)
+	while (!infile_book.eof())
 	{
 		infile_book >> search;
-		if (search.getBarCode() == bookItemMod.getBarCode())
+		if (search.getBarCode() == barcode)
 		{
-			outfile_book << bookItemMod;
+			std::cout << "Nhap thong tin sua doi sach\n";
+			std::cin >> search;
+
+			if (File::is_empty_file(infile_book))
+				temp << search;
+			else
+				temp << search << '\n';
+
 			isFound = true;
 		}
-		else
-			outfile_book << search;
+		else temp << search;
 	}
+	infile_book.close();
+	temp.close();
 
 	if (!isFound)
 	{
@@ -96,7 +96,6 @@ bool Librarian::removeBook(string barCode)
 bool Librarian::blockMember(string id)
 {
 	std::ifstream infile_member(link_member_information);
-
 	if (infile_member.fail())
 		throw std::exception("file not found");
 
@@ -108,6 +107,8 @@ bool Librarian::blockMember(string id)
 	
 	Member mem;
 	bool isFound = false;
+
+	int i = 0;
 	while (!infile_member.eof())
 	{
 		infile_member >> mem;
@@ -118,7 +119,13 @@ bool Librarian::blockMember(string id)
 			isFound = true;
 		}
 		
-		temp << mem;
+		if (i == 0)
+		{
+			temp << mem;
+			i++;
+		}
+		else
+			temp << '\n' << mem;
 	}
 	infile_member.close();
 	temp.close();
@@ -136,31 +143,42 @@ bool Librarian::blockMember(string id)
 	return true;
 }
 
-bool Librarian::unblockMember(Member member)
+bool Librarian::unblockMember(string id)
 {
 	std::ifstream infile_member(link_member_information);
-	size_t numMembers = 0;
-	infile_member >> numMembers;
+	if (infile_member.fail())
+		return false;
+
+	if (File::is_empty_file(infile_member))
+		return false;
 
 	std::string linkTemp = Directory::getDir(link_member_information) + "tmp.txt";
 	std::ofstream temp(linkTemp);
 	
-	Member search;
-	bool isFound = false;
-	for (size_t i = 0; i < numMembers; i++)
+	Member mem;
+	bool isAvailable = false;
+	int i = 0;
+	while (!infile_member.fail())
 	{
-		infile_member >> search;
+		infile_member >> mem;
 
-		if (search.getId() == member.getId())
+		if (mem.getId() == id)
 		{
-			isFound = true;
-			member.setAccountStatus(AccountStatus::ACTIVE);
+			isAvailable = true;
+			mem.setAccountStatus(AccountStatus::ACTIVE);
 		}
 
-		temp << search;
+		if (i == 0)
+		{
+			temp << mem;
+			i++;
+		}
+		else temp << '\n' << mem;
 	}
+	infile_member.close();
+	temp.close();
 
-	if (!isFound)
+	if (!isAvailable)
 	{
 		remove(linkTemp.c_str());
 		return false;

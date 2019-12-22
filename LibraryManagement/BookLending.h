@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include "MyDefine.h"
 
 #define link_lending_book "lending_information"
 
@@ -22,11 +24,14 @@ public:
 	BookLending(const BookLending& bookLending);
 	~BookLending();
 
+	Date getCreateDate();
 	Date getDueDate();
 	string getBookItemBarCode();
 	string getMemberId();
 
-	void lendBook(string barcode, string memberId);
+	bool lendBook(string barcode, string memberId);
+	bool deleteLendingBook(string barcode, string memberId);
+	bool updateDueDate(string barcode, string memberId);
 	std::vector<BookLending> fetchLendingDetails(string memberId);
 
 	friend std::istream& operator>>(std::istream& in, BookLending& bookLending);

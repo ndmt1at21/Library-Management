@@ -7,14 +7,12 @@
 #include "Account.h"
 #include "Member.h"
 #include "Librarian.h"
+#include "Search.h"
 
 using namespace std;
 
 int main()
 {
-	/*Member mem;
-	mem.registerNew();*/
-
 	Librarian lib;
-	lib.blockMember("1");
+	lib.unblockMember("ndmt");
 }

@@ -7,6 +7,7 @@ Date: 19/12/2019
 #pragma once
 #include <iostream>
 #include <string>
+#include <fstream>
 
 #define MAX_BOOK_ISSUE_FOR_A_USER 5
 #define MAX_LENDING_DAY 10
@@ -42,6 +43,7 @@ public:
 	Address(std::string city, std::string streetAdd);
 	Address(const Address& other);
 	friend std::istream& operator>>(std::istream& in, Address& address);
+	friend std::ifstream& operator>>(std::ifstream& in, Address& address);
 	friend std::ostream& operator<<(std::ostream& out, const Address address);
 };
 
@@ -58,6 +60,7 @@ public:
 	Person(std::string name, Address address, std::string email, std::string phone);
 	Person(const Person& person);
 	friend std::istream& operator>>(std::istream& in, Person& person);
+	friend std::ifstream& operator>>(std::ifstream& in, Person& person);
 	friend std::ostream& operator<<(std::ostream& out, const Person person);
 };
 

@@ -1,7 +1,9 @@
 #include "BookItem.h"
 #include <iomanip>
+#include "Directory.h"
 
-BookItem::BookItem() :_numberAvailableBook(0) {}
+BookItem::BookItem() 
+	:_numberAvailableBook(0), _bookStatus(BookStatus::LOANED) {}
 
 BookItem::BookItem(string barCode, Rack place, BookStatus bookStatus, uint32_t numAvailable,
 	string isbn, string title, string publisher, string language, 
@@ -19,6 +21,7 @@ BookItem::BookItem(const BookItem& bookItem) :Book(bookItem)
 {
 	_barCode = bookItem._barCode;
 	_placeAt = bookItem._placeAt;
+	_bookStatus = bookItem._bookStatus;
 	_numberAvailableBook = bookItem._numberAvailableBook;
 }
 
@@ -32,6 +35,27 @@ string BookItem::getBarCode()
 Rack BookItem::getPlaceAt()
 {
 	return _placeAt;
+}
+
+BookStatus BookItem::getBookStatus()
+{
+	return _bookStatus;
+}
+
+uint32_t BookItem::getNumberAvailableBook()
+{
+	return _numberAvailableBook;
+}
+
+void BookItem::setBookStatus()
+{
+	if (_numberAvailableBook == 0)
+		_bookStatus = BookStatus::LOANED;
+}
+
+void BookItem::decreaseNumberAvailableBook()
+{
+	_numberAvailableBook--;
 }
 
 void BookItem::viewBookInformation(std::ostream& out)
@@ -75,22 +99,33 @@ void BookItem::viewBookInformation(std::ostream& out)
 		out << std::setw(10) << "None";
 	}
 
+	out << std::setw(10) << _placeAt;
 	for (size_t i = 0; i < _authorsName.size(); i++)
 		out << _authorsName[i] << "\n";
 }
 
-void BookItem::updateBookStatus()
-{
-	if (_numberAvailableBook == 0)
-		_bookStatus = BookStatus::LOANED;
-}
-
-void BookItem::decreaseNumberAvailableBook()
-{
-	_numberAvailableBook--;
-}
-
 std::istream& operator>>(std::istream& in, BookItem& book)
+{
+	operator>>(in, static_cast<Book&>(book));
+
+	std::cout << "Barcode: ";
+	std::getline(in, book._barCode, '\n');
+
+	std::cout << "Vi tri ke (day-ke-thu tu): ";
+	in >> book._placeAt;
+
+	std::cout << "So sach hien co: ";
+	in >> book._numberAvailableBook;
+	in.get();
+
+	if (book._numberAvailableBook == 0)
+		book._bookStatus = BookStatus::LOANED;
+	else book._bookStatus = BookStatus::AVAILABLE;
+
+	return in;
+}
+
+std::ifstream& operator>>(std::ifstream& in, BookItem& book)
 {
 	std::getline(in, book._barCode, '\n');
 	in >> book._placeAt;
@@ -108,6 +143,17 @@ std::istream& operator>>(std::istream& in, BookItem& book)
 }
 
 std::ostream& operator<<(std::ostream& out, const BookItem& book)
+{
+	operator<<(out, static_cast<const Book&>(book));
+	out << std::left << std::setw(30) << "Barcode: " << book._barCode << '\n';
+	out << std::setw(30) << "Vi tri ke: " << book._placeAt << '\n';
+	out << std::setw(30) << "Status: " << int(book._bookStatus) << '\n';
+	out << std::setw(30) << "So sach co san: " << book._numberAvailableBook << '\n';
+
+	return out;
+}
+
+std::ofstream& operator<<(std::ofstream& out, const BookItem& book)
 {
 	out << book._barCode << '\n';
 	out << book._placeAt << '\n';
@@ -132,8 +178,6 @@ bool BookItem::checkout()
 		return false;
 	}
 
-	decreaseNumberAvailableBook();
-	updateBookStatus();
-
+	_numberAvailableBook--;
 	return true;
 }

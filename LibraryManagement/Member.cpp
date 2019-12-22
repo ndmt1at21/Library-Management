@@ -15,37 +15,75 @@ Member::Member(string id, AccountStatus status, string password, Person person,
 	_totalBooksCheckedout = totalBookChekedout;
 }
 
-void Member::updatePassword(string newPassword)
-{
-	_password = newPassword;
-}
-
-bool Member::resetPassword(string id, string newPassword)
+bool Member::resetPassword(string newPassword)
 {
 	std::ifstream infile_member(link_member_information);
-	std::ofstream temp(Directory::getDir(link_member_information) + "tmp.txt");
+
+	std::string linkTmp = Directory::getDir(link_member_information) + "tmp.txt";
+	std::ofstream temp(linkTmp);
 
 	if (infile_member.fail())
 		throw std::exception("file not found");
 
-	if (File::is_empty_file(infile_member))
+	bool isEmptyFileMember = File::is_empty_file(infile_member);
+	if (isEmptyFileMember)
 		return false;
 
-	int i = 0;
+	int i = 0; //ghi đầu file ko cần xuống dòng
 	while (!infile_member.eof())
 	{
 		Member mem;
 		infile_member >> mem;
 
-		if (mem.getId() == id)
-			mem.updatePassword(newPassword);
+		if (mem.getId() == this->_id)
+			mem._password = newPassword;
 		
 		if (i == 0)
+		{
 			temp << mem;
-		else temp << '\n' << mem;
+			i++;
+		}
+		else
+			temp << '\n' << mem;
 	}
+	infile_member.close();
+	temp.close();
+
+	remove(link_member_information);
+	if (!rename(linkTmp.c_str(), link_member_information))
+		return false;
 
 	return true;
+}
+
+uint32_t Member::getTotalCheckedoutBooks()
+{
+	return _totalBooksCheckedout;
+}
+
+Date Member::getDateOfMembership()
+{
+	return _dateOfMembership;
+}
+
+void Member::setDateOfMembership(Date date)
+{
+	_dateOfMembership = date;
+}
+
+void Member::setTotalBooksCheckedout(uint32_t total)
+{
+	_totalBooksCheckedout = total;
+}
+
+void Member::increaseTotalBooksCheckedout()
+{
+	_totalBooksCheckedout++;
+}
+
+void Member::decreaseTotalBooksCheckedout()
+{
+	_totalBooksCheckedout--;
 }
 
 void Member::registerNew()
@@ -57,8 +95,15 @@ void Member::registerNew()
 	bool isEmptyFile = File::is_empty_file(infile_member);
 	while (true)
 	{
-		std::cout << "Ten dang nhap: ";
-		std::getline(std::cin, _id, '\n');
+		while (true)
+		{
+			std::cout << "Ten dang nhap: ";
+			std::getline(std::cin, _id, '\n');
+			if (_id.empty())
+				ShowError("Ten dang nhap khong duoc trong\n");
+			else break;
+		};
+		
 
 		if (isEmptyFile)
 			break;
@@ -73,6 +118,7 @@ void Member::registerNew()
 			{
 				isAvailable = true;
 				std::cout << "Ten dang nhap da ton tai.\n";
+				infile_member.seekg(0);
 				break;
 			}
 		}
@@ -85,8 +131,9 @@ void Member::registerNew()
 		std::cout << "Mat khau: ";
 		std::getline(std::cin, _password, '\n');
 
-		if (!_password.empty())
-			break;
+		if (_password.size() < 5)
+			ShowError("Mat khau it nhat 5 ky tu\n");
+		else break;
 	}
 
 	std::cin >> _person;
@@ -95,19 +142,13 @@ void Member::registerNew()
 	_dateOfMembership.getDateNow();
 	_dateOfMembership = _dateOfMembership + 10;
 	_totalBooksCheckedout = 0;
-	
-	//kiểm tra file trống ko, nếu trống thì ko cần \n trước
-	infile_member.close();
-	std::ofstream outfile(link_member_information, std::ios::app);
 
+	infile_member.close();
+
+	std::ofstream outfile(link_member_information, std::ios::app);
 	if (isEmptyFile)
 		outfile << *this;
 	else outfile << '\n' << *this;
-}
-
-uint32_t Member::getTotalCheckedoutBooks()
-{
-	return _totalBooksCheckedout;
 }
 
 std::istream& operator>>(std::istream& in, Member& member)
@@ -115,6 +156,16 @@ std::istream& operator>>(std::istream& in, Member& member)
 	operator>>(in, static_cast<Account&>(member));
 	in >> member._dateOfMembership;
 
+	in >> member._totalBooksCheckedout;
+	in.get();
+
+	return in;
+}
+
+std::ifstream& operator>>(std::ifstream& in, Member& member)
+{
+	operator>>(in, static_cast<Account&>(member));
+	in >> member._dateOfMembership;
 	in >> member._totalBooksCheckedout;
 	in.get();
 
@@ -130,7 +181,18 @@ std::ostream& operator<<(std::ostream& out, const Member& member)
 	return out;
 }
 
-bool Member::checkoutBookItem(BookItem book)
+bool Member::checkoutBookItem(string barCode)
 {
+	if (_totalBooksCheckedout > MAX_BOOK_ISSUE_FOR_A_USER)
+	{
+		ShowError("Ban da muon sach vuot gioi han\n");
+		return false;
+	}
+
+	BookLending bookLending;
+	if (!bookLending.lendBook(barCode, this->_id))
+		return false;
+	this->increaseTotalBooksCheckedout();
+
 	return true;
 }

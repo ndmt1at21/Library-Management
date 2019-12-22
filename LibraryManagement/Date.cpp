@@ -49,15 +49,66 @@ Date::~Date() {}
 
 Date Date::operator+(uint32_t day)
 {
+	int month[13] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
 	tm date;
 	date.tm_mday = _day;
 	date.tm_mon = _mon;
 	date.tm_year = _year;
 
 	date.tm_mday += day;
-	
+
+	if (date.tm_mon == 2)
+	{
+		if (isLeafYear())
+		{
+			if (date.tm_mday > month[2] + 1)
+			{
+				date.tm_mday -= month[2] + 1;
+				date.tm_mon++;
+			}
+		}
+		else
+		{
+			if (date.tm_mday > month[2])
+			{
+				date.tm_mday -= month[2];
+				date.tm_mon++;
+			}
+		}
+
+	}
+	else
+	{
+		if (date.tm_mday > month[date.tm_mon])
+		{
+			date.tm_mday -= month[date.tm_mon];
+			date.tm_mon++;
+		}
+	}
+
+	if (date.tm_mon > 12)
+	{
+		date.tm_mon -= 12;
+		date.tm_year++;
+	}
+
 	Date newDate(date.tm_mday, date.tm_mon, date.tm_year);
 	return newDate;
+}
+
+bool Date::operator>(const Date& date)
+{
+	if (date._year <= _year)
+		return false;
+
+	if (date._mon <= _mon)
+		return false;
+
+	if (date._day <= _day)
+		return false;
+
+	return true;
 }
 
 uint32_t Date::operator-(const Date& other)

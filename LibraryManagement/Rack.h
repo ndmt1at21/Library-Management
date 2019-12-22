@@ -16,5 +16,7 @@ public:
 	std::string getPlace();
 	friend std::istream& operator>>(std::istream& in, Rack& rack);
 	friend std::ostream& operator<<(std::ostream& out, const Rack rack);
+
+	void showPlace();
 };
 

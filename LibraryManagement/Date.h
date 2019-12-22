@@ -20,6 +20,7 @@ public:
 	~Date();
 
 	Date operator+(uint32_t day);
+	bool operator>(const Date& date);
 	uint32_t operator-(const Date& other);
 
 	bool isLeafYear();

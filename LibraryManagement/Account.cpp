@@ -1,5 +1,6 @@
 #include "Account.h"
 #include <fstream>
+#include <iomanip>
 
 Account::Account()
 {
@@ -34,12 +35,32 @@ AccountStatus Account::getAccountStatus()
 	return _status;
 }
 
+void Account::setId(string id)
+{
+	_id = id;
+}
+
 void Account::setAccountStatus(AccountStatus status)
 {
 	_status = status;
 }
 
 std::istream& operator>>(std::istream& in, Account& account)
+{
+	std::getline(in, account._id, '\n');
+
+	int status;
+	in >> status;
+	account._status = AccountStatus(status);
+	in.get();
+
+	std::getline(in, account._password, '\n');
+	in >> account._person;
+
+	return in;
+}
+
+std::ifstream& operator>>(std::ifstream& in, Account& account)
 {
 	std::getline(in, account._id, '\n');
 
@@ -69,6 +90,8 @@ void Account::listBook()
 	std::ifstream infile_book(link_book_information);
 	BookItem book;
 
+	std::cout << "TEN SACH" << std::setw(40) << "BARCODE" << std::setw(20) << "THE LOAI";
+	std::cout << std::setw(23) << "STATUS" << std::setw(10) << "VI TRI" << std::setw(11) <<"TAC GIA" << std::endl;
 	while(!infile_book.eof())
 	{
 		infile_book >> book;

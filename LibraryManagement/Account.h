@@ -4,6 +4,7 @@
 #include "MyDefine.h"
 #include "BookItem.h"
 #include "Library.h"
+#include "Search.h"
 
 #define link_member_information "member_information.txt"
 
@@ -25,11 +26,14 @@ public:
 
 	string getId();
 	AccountStatus getAccountStatus();
+
+	void setId(string id);
 	void setAccountStatus(AccountStatus status);
-	void resetPassword(string id, string phone);
 
 	friend std::istream& operator>>(std::istream& in, Account& account);
+	friend std::ifstream& operator>>(std::ifstream& in, Account& account);
 	friend std::ostream& operator<<(std::ostream& out, const Account& account);
+
 	void listBook();
 };
 

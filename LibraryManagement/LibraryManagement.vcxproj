@@ -130,11 +130,12 @@
     <ClCompile Include="Date.cpp" />
     <ClCompile Include="Directory.cpp" />
     <ClCompile Include="File.cpp" />
+    <ClCompile Include="Fine.cpp" />
     <ClCompile Include="Librarian.cpp" />
     <ClCompile Include="Library.cpp" />
-    <ClCompile Include="LogInOut.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Member.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="MyDefine.cpp" />
     <ClCompile Include="Rack.cpp" />
     <ClCompile Include="Search.cpp" />
@@ -149,10 +150,11 @@
     <ClInclude Include="Date.h" />
     <ClInclude Include="Directory.h" />
     <ClInclude Include="File.h" />
+    <ClInclude Include="Fine.h" />
     <ClInclude Include="Librarian.h" />
     <ClInclude Include="Library.h" />
-    <ClInclude Include="LogInOut.h" />
     <ClInclude Include="Member.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="MyDefine.h" />
     <ClInclude Include="Rack.h" />
     <ClInclude Include="Search.h" />

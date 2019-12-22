@@ -59,9 +59,16 @@ public:
 	Person();
 	Person(std::string name, Address address, std::string email, std::string phone);
 	Person(const Person& person);
+
+	std::string getName();
+	Address getAddress();
+	std::string getEmail();
+	std::string getPhone();
+
 	friend std::istream& operator>>(std::istream& in, Person& person);
 	friend std::ifstream& operator>>(std::ifstream& in, Person& person);
 	friend std::ostream& operator<<(std::ostream& out, const Person person);
+	friend std::ofstream& operator<<(std::ofstream& out, const Person person);
 };
 
 void ShowError(const char* str);

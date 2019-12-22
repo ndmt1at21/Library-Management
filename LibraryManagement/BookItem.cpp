@@ -164,20 +164,94 @@ std::ofstream& operator<<(std::ofstream& out, const BookItem& book)
 	return out;
 }
 
-bool BookItem::checkout()
+bool BookItem::checkout(string barcode)
 {
-	if (_numberAvailableBook == 0)
-	{
-		_bookStatus = BookStatus::LOANED;
-		return false;
-	}
+	std::ifstream infile_book(link_book_information);
+	if (infile_book.fail())
+		throw std::exception("file not found");
 
-	if (_bookStatus == BookStatus::LOANED)
-	{
-		ShowError("Sach da duoc muon");
-		return false;
-	}
+	std::string linkTmp = Directory::getDir(link_book_information) + "tmp.txt";
+	std::ofstream file_temp(linkTmp);
 
-	_numberAvailableBook--;
+	int i = 0;
+	while (!infile_book.eof())
+	{
+		BookItem book;
+		infile_book >> book;
+
+		if (book.getBarCode() == barcode)
+		{
+			if (book._numberAvailableBook == 0)
+			{
+				book._bookStatus = BookStatus::LOANED;
+				return false;
+			}
+
+			if (book._bookStatus == BookStatus::LOANED)
+			{
+				ShowError("Sach da duoc muon");
+				return false;
+			}
+			book._numberAvailableBook--;
+		}
+
+		if (i == 0)
+		{
+			file_temp << book;
+			i++;
+		}
+		else
+		{
+			file_temp << '\n';
+			file_temp << book;
+		}
+	}
+	infile_book.close();
+	file_temp.close();
+
+	remove(link_book_information);
+	rename(linkTmp.c_str(), link_book_information);
+
+	return true;
+}
+
+bool BookItem::returnBook(string barcode)
+{
+	std::ifstream infile_book(link_book_information);
+	if (infile_book.fail())
+		throw std::exception("file not found");
+
+	std::string linkTmp = Directory::getDir(link_book_information) + "tmp.txt";
+	std::ofstream file_temp(linkTmp);
+
+	int i = 0;
+	while (!infile_book.eof())
+	{
+		BookItem book;
+		infile_book >> book;
+
+		if (book.getBarCode() == barcode)
+		{
+			book._numberAvailableBook++;
+			book._bookStatus = BookStatus::AVAILABLE;
+		}
+
+		if (i == 0)
+		{
+			file_temp << book;
+			i++;
+		}
+		else
+		{
+			file_temp << '\n';
+			file_temp << book;
+		}
+	}
+	infile_book.close();
+	file_temp.close();
+
+	remove(link_book_information);
+	rename(linkTmp.c_str(), link_book_information);
+
 	return true;
 }

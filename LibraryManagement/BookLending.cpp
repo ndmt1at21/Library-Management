@@ -46,81 +46,17 @@ string BookLending::getMemberId()
 
 bool BookLending::lendBook(string barcode, string memberId)
 {
-	//kiểm tra điều kiện member
+	if (!BookItem::checkout(barcode))
+		return false;
+
+	Member::increaseTotalBooksCheckedout(memberId);
+	
 	Date dateNow;
 	dateNow.getDateNow();
-	
-	std::ifstream infile_member(link_member_information);
-	if (infile_member.fail())
-		throw std::exception("file not found");
 
-	Member mem;
-	while (!infile_member.eof())
-	{
-
-		infile_member >> mem;
-
-		if (memberId == mem.getId() && dateNow > mem.getDateOfMembership())
-		{
-			ShowError("Tai khoan het han");
-			return false;
-		}
-	}
-	infile_member.seekg(0, std::ios::beg);
-	mem.increaseTotalBooksCheckedout();
-
-	if (mem.getTotalCheckedoutBooks() >= MAX_BOOK_ISSUE_FOR_A_USER)
-	{
-		ShowError("Ban khong the muon them sach");
-		return false;
-	}
-
-	//kiểm tra tình trạng sách
-	std::ifstream infile_book(link_book_information);
-	if (infile_book.fail())
-		throw std::exception("file not found");
-
-	BookItem book;
-	while (!infile_book.eof())
-	{
-		infile_book >> book;
-		if (book.getBarCode() == barcode)
-		{
-			if (!book.checkout())
-				return false;
-			break;
-		}
-	}
-	infile_book.seekg(0, std::ios::beg);
-	book.decreaseNumberAvailableBook();
-
-	//update thông tin
-	string linkTmpMember = Directory::getDir(link_member_information) + "tmpMember.txt";
-	string linkTmpBook = Directory::getDir(link_member_information) + "tmpBook.txt";
-
-	std::ofstream tmp_member(linkTmpMember);
-	std::ofstream tmp_book(linkTmpBook);
 	std::ofstream outfile_lending(link_lending_book, std::ios::app);
-
-	while (!tmp_member.eof())
-	{
-		Member memTmp;
-		infile_member >> memTmp;
-
-		if (memTmp.getId() == memberId)
-			tmp_member << mem;
-		tmp_member << memTmp;
-	}
-
-	while (!tmp_book.eof())
-	{
-		BookItem bookTmp;
-		infile_book >> bookTmp;
-
-		if (bookTmp.getBarCode() == barcode)
-			tmp_book << book;
-		tmp_member << bookTmp;
-	}
+	if (outfile_lending.fail())
+		return false;
 
 	this->_bookItemBarcode = barcode;
 	this->_memberId = memberId;
@@ -132,22 +68,14 @@ bool BookLending::lendBook(string barcode, string memberId)
 		outfile_lending << *this;
 	else outfile_lending << '\n' << *this;
 
-	infile_book.close();
-	infile_member.close();
-	tmp_book.close();
-	tmp_member.close();
-	outfile_lending.close();
-
-	remove(link_book_information);
-	remove(link_member_information);
-	rename(link_book_information, linkTmpBook.c_str());
-	rename(link_member_information, linkTmpMember.c_str());
-
 	return true;
 }
 
 bool BookLending::deleteLendingBook(string barcode, string memberId)
 {
+	if (!BookItem::returnBook(barcode))
+		return false;
+
 	std::ifstream infile_lending(link_lending_book);
 	if (infile_lending.fail())
 		throw std::exception("file not found");
@@ -173,7 +101,7 @@ bool BookLending::deleteLendingBook(string barcode, string memberId)
 	temp.close();
 
 	remove(link_lending_book);
-	if (!rename(link_lending_book, linkTmp.c_str()))
+	if (!rename(linkTmp.c_str(), link_lending_book))
 		return false;
 
 	return true;

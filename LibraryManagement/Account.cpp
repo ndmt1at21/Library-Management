@@ -35,6 +35,17 @@ AccountStatus Account::getAccountStatus()
 	return _status;
 }
 
+string Account::getPassword()
+{
+	return _password;
+}
+
+
+Person Account::getPersonInfo()
+{
+	return _person;
+}
+
 void Account::setId(string id)
 {
 	_id = id;
@@ -77,6 +88,27 @@ std::ifstream& operator>>(std::ifstream& in, Account& account)
 
 std::ostream& operator<<(std::ostream& out, const Account& account)
 {
+	out << std::left << std::setw(20) << account._id;
+	
+	out << std::setw(10);
+	switch (account._status)
+	{
+	case AccountStatus::ACTIVE:
+		out << "Active";
+		break;
+
+	case AccountStatus::BLOCK:
+		out << "Block";
+		break;
+	}
+
+	out << account._person;
+
+	return out;
+}
+
+std::ofstream& operator<<(std::ofstream& out, const Account& account)
+{
 	out << account._id << '\n';
 	out << int(account._status) << '\n';
 	out << account._password << '\n';
@@ -90,8 +122,6 @@ void Account::listBook()
 	std::ifstream infile_book(link_book_information);
 	BookItem book;
 
-	std::cout << "TEN SACH" << std::setw(40) << "BARCODE" << std::setw(20) << "THE LOAI";
-	std::cout << std::setw(23) << "STATUS" << std::setw(10) << "VI TRI" << std::setw(11) <<"TAC GIA" << std::endl;
 	while(!infile_book.eof())
 	{
 		infile_book >> book;

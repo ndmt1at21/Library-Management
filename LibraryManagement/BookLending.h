@@ -6,7 +6,7 @@
 #include <fstream>
 #include "MyDefine.h"
 
-#define link_lending_book "lending_information"
+#define link_lending_book "lending_information.txt"
 
 using std::string;
 
@@ -32,7 +32,7 @@ public:
 	bool lendBook(string barcode, string memberId);
 	bool deleteLendingBook(string barcode, string memberId);
 	bool updateDueDate(string barcode, string memberId);
-	std::vector<BookLending> fetchLendingDetails(string memberId);
+	static std::vector<BookLending> fetchLendingDetails(string memberId);
 
 	friend std::istream& operator>>(std::istream& in, BookLending& bookLending);
 	friend std::ostream& operator<<(std::ostream& out, const BookLending& bookLending);

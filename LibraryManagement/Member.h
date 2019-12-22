@@ -4,6 +4,7 @@
 #include "Date.h"
 #include "BookLending.h"
 #include <fstream>
+#include "Fine.h"
 
 class Member :public Account
 {
@@ -20,20 +21,20 @@ public:
 
 	void setDateOfMembership(Date date);
 	void setTotalBooksCheckedout(uint32_t total);
-	void increaseTotalBooksCheckedout();
-	void decreaseTotalBooksCheckedout();
+	static void increaseTotalBooksCheckedout(string memberId);
+	static void decreaseTotalBooksCheckedout(string memberId);
 
 	bool resetPassword(string newPassWord);
 	void registerNew();
 	
-	
-
 	friend std::istream& operator>>(std::istream& in, Member& member);
 	friend std::ifstream& operator>>(std::ifstream& in, Member& member);
 	friend std::ostream& operator<<(std::ostream& out, const Member& member);
+	friend std::ofstream& operator<<(std::ofstream& out, const Member& member);
 
-	bool checkoutBookItem(string barCode);
-	bool returnItem(string barCode);
-	bool renewItem(string barCode);
+	void checkForFine();
+	bool checkoutBookItem(string barcode);
+	bool returnBookItem(string barcode);
+	bool renewBookItem(string barcode);
 };
 

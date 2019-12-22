@@ -1,4 +1,4 @@
-#include "Librarian.h"
+﻿#include "Librarian.h"
 #include "Directory.h"
 #include "File.h"
 
@@ -10,7 +10,11 @@ void Librarian::addBookItem(BookItem bookItem)
 
 	if (File::is_empty_file(file_book))
 		file_book << bookItem;
-	else file_book << '\n' << bookItem;
+	else
+	{
+		file_book << '\n';
+		file_book << bookItem;
+	}
 }
 
 bool Librarian::modifyBook(string barcode)
@@ -199,32 +203,53 @@ size_t Librarian::getNumberOfMember()
 	return numMembers;
 }
 
-bool Librarian::searchMember(string id)
+void Librarian::listMember()
 {
 	std::ifstream infile_member(link_member_information);
-	size_t numMembers = 0;
-	infile_member >> numMembers;
-	return true;
+
+	if (File::is_empty_file(infile_member))
+	{
+		std::cout << "Chua co thanh vien\n";
+		return;
+	}
+
+	Member mem;
+	while (!infile_member.eof())
+	{
+		infile_member >> mem;
+		std::cout << mem;
+	}
 }
 
-void Librarian::showAllMember()
+void Librarian::xuatPhieuMuon(string barcode, string memberId)
 {
+	BookLending bookLending;
+	std::vector<BookLending> books = bookLending.fetchLendingDetails(memberId); //Nhiều cuốn
+
 	std::ifstream infile_member(link_member_information);
-
-	while (true)
+	Member mem;
+	while (!infile_member.eof())
 	{
-		infile_member >> *this;
-		std::cout << _id << "\t" << _password << "\t";
+		infile_member >> mem;
 
-		switch (_status)
+		if (mem.getId() == memberId)
+			break;
+	}
+
+	for (size_t i = 0; i < books.size(); i++)
+	{
+		if (books[i].getBookItemBarCode() == barcode)
 		{
-		case AccountStatus::ACTIVE:
-			std::cout << "Active\n";
-			break;
-		
-		case AccountStatus::BLOCK:
-			std::cout << "Block\n";
-			break;
+			string link = barcode + "_" + memberId + ".txt";
+			std::ofstream outfile_phieuMuon(link);
+
+			outfile_phieuMuon << "\t\t\tPHIEU MUON SACH\n\n";
+			outfile_phieuMuon << std::left << "Ho va ten: " << std::setw(30) << mem.getPersonInfo().getName() << '\n';
+			outfile_phieuMuon << "ID: " << std::setw(30) << mem.getId() << '\n';
+			outfile_phieuMuon << "Barcode sach: " << std::setw(30) << books[i].getBookItemBarCode() << '\n';
+			outfile_phieuMuon << "Ngay muon: " << std::setw(30) << books[i].getCreateDate() << '\n';
+			outfile_phieuMuon << "Ngay tra: " << std::setw(30) << books[i].getDueDate() << '\n';
+			outfile_phieuMuon << "\t\t\t\t\t Ky va ghi ro ho ten";
 		}
 	}
 }

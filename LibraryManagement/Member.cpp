@@ -76,14 +76,74 @@ void Member::setTotalBooksCheckedout(uint32_t total)
 	_totalBooksCheckedout = total;
 }
 
-void Member::increaseTotalBooksCheckedout()
+void Member::increaseTotalBooksCheckedout(string memberId)
 {
-	_totalBooksCheckedout++;
+	std::ifstream infile_member(link_member_information);
+	if (infile_member.fail())
+		throw std::exception("file not found");
+
+	string linkTmp = Directory::getDir(link_member_information) + "tmp.txt";
+	std::ofstream file_temp(linkTmp);
+
+	int i = 0;
+	while (!infile_member.eof())
+	{
+		Member mem;
+		infile_member >> mem;
+
+		if (mem.getId() == memberId)
+			mem._totalBooksCheckedout++;
+
+		if (i == 0)
+		{
+			file_temp << mem;
+			i++;
+		}
+		else
+		{
+			file_temp << '\n';
+			file_temp << mem;
+		}
+	}
+	infile_member.close();
+	file_temp.close();
+
+	remove(link_member_information);
+	rename(linkTmp.c_str(), link_member_information);
 }
 
-void Member::decreaseTotalBooksCheckedout()
+void Member::decreaseTotalBooksCheckedout(string memberId)
 {
-	_totalBooksCheckedout--;
+	std::ifstream infile_member(link_member_information);
+	if (infile_member.fail())
+		throw std::exception("file not found");
+
+	string linkTmp = Directory::getDir(link_member_information) + "tmp.txt";
+	std::ofstream file_temp(linkTmp);
+
+	int i = 0;
+	while (!infile_member.eof())
+	{
+		Member mem;
+		infile_member >> mem;
+
+		if (mem.getId() == memberId)
+			mem._totalBooksCheckedout++;
+
+		if (i == 0)
+		{
+			file_temp << mem;
+			i++;
+		}
+		else
+		{
+			file_temp << '\n';
+			file_temp << mem;
+		}
+	}
+
+	remove(link_member_information);
+	rename(linkTmp.c_str(), link_member_information);
 }
 
 void Member::registerNew()
@@ -103,7 +163,7 @@ void Member::registerNew()
 				ShowError("Ten dang nhap khong duoc trong\n");
 			else break;
 		};
-		
+
 
 		if (isEmptyFile)
 			break;
@@ -122,7 +182,7 @@ void Member::registerNew()
 				break;
 			}
 		}
-		if (!isAvailable)	
+		if (!isAvailable)
 			break;
 	}
 
@@ -132,7 +192,7 @@ void Member::registerNew()
 		std::getline(std::cin, _password, '\n');
 
 		if (_password.size() < 5)
-			ShowError("Mat khau it nhat 5 ky tu\n");
+			ShowError("Mat khau it nhat 5 ky tu");
 		else break;
 	}
 
@@ -148,7 +208,11 @@ void Member::registerNew()
 	std::ofstream outfile(link_member_information, std::ios::app);
 	if (isEmptyFile)
 		outfile << *this;
-	else outfile << '\n' << *this;
+	else
+	{
+		outfile << '\n';
+		outfile << *this;
+	}
 }
 
 std::istream& operator>>(std::istream& in, Member& member)
@@ -174,6 +238,15 @@ std::ifstream& operator>>(std::ifstream& in, Member& member)
 
 std::ostream& operator<<(std::ostream& out, const Member& member)
 {
+	operator<<(out, static_cast<const Account&>(member));
+	out << std::setw(10) << member._dateOfMembership;
+	out << std::right << std::setw(20) << member._totalBooksCheckedout << '\n';
+
+	return out;
+}
+
+std::ofstream& operator<<(std::ofstream& out, const Member& member)
+{
 	operator<<(out, static_cast<const Account&>(member)) << '\n';
 	out << member._dateOfMembership << '\n';
 	out << member._totalBooksCheckedout;
@@ -181,18 +254,78 @@ std::ostream& operator<<(std::ostream& out, const Member& member)
 	return out;
 }
 
-bool Member::checkoutBookItem(string barCode)
+bool Member::checkoutBookItem(string barcode)
 {
+	Date dateNow;
+	dateNow.getDateNow();
+
 	if (_totalBooksCheckedout > MAX_BOOK_ISSUE_FOR_A_USER)
 	{
 		ShowError("Ban da muon sach vuot gioi han\n");
 		return false;
 	}
 
-	BookLending bookLending;
-	if (!bookLending.lendBook(barCode, this->_id))
+	if (_dateOfMembership > dateNow)
+	{
+		ShowError("Tai khoan het han su dung");
 		return false;
-	this->increaseTotalBooksCheckedout();
+	}
 
+	BookLending bookLending;
+	if (!bookLending.lendBook(barcode, this->_id))
+		return false;
+	_totalBooksCheckedout++;
+
+	return true;
+}
+
+void Member::checkForFine()
+{
+	std::vector<BookLending> books = BookLending::fetchLendingDetails(this->_id);
+	
+	Date dateNow;
+	dateNow.getDateNow();
+	
+	double fines = 0;
+	for (size_t i = 0; i < books.size(); i++)
+	{
+		if (books[i].getCreateDate() > dateNow)
+		{
+			uint32_t days = dateNow - books[i].getCreateDate();
+			fines += Fine::collectFine(books[i].getBookItemBarCode(), days);
+		}
+	}
+
+	std::cout << "So tien phat: " << fines;
+}
+
+
+bool Member::returnBookItem(string barcode)
+{
+	checkForFine();
+
+	BookLending bookLending;
+	if (!bookLending.deleteLendingBook(barcode, this->_id))
+		return false;
+
+	return true;
+}
+
+bool Member::renewBookItem(string barcode)
+{
+	checkForFine();
+
+	Date dateNow;
+	dateNow.getDateNow();
+
+	if (_dateOfMembership > dateNow)
+	{
+		ShowError("Tai khoan het han su dung");
+		return false;
+	}
+
+	BookLending bookLending;
+	if (!bookLending.updateDueDate(barcode, this->_id))
+		return false;
 	return true;
 }

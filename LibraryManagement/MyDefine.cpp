@@ -1,5 +1,6 @@
 #include "MyDefine.h"
 #include "StringProcess.h"
+#include <iomanip>
 
 Address::Address() {}
 
@@ -72,6 +73,26 @@ Person::Person(const Person& person)
 	_phone = person._phone;
 }
 
+std::string Person::getName()
+{
+	return _name;
+}
+
+Address Person::getAddress()
+{
+	return _address;
+}
+
+std::string Person::getEmail()
+{
+	return _email;
+}
+
+std::string Person::getPhone()
+{
+	return _phone;
+}
+
 std::istream& operator>>(std::istream& in, Person& person)
 {
 	std::cout << "Ho va ten: ";
@@ -125,6 +146,15 @@ std::ifstream& operator>>(std::ifstream& in, Person& person)
 }
 
 std::ostream& operator<<(std::ostream& out, const Person person)
+{
+	out << std::left << std::setw(30) << person._name;
+	out << std::setw(20) << person._email;
+	out << std::setw(20) << person._phone;
+
+	return out;
+}
+
+std::ofstream& operator<<(std::ofstream& out, const Person person)
 {
 	out << person._name << '\n';
 	out << person._address << '\n';

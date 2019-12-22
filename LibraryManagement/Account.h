@@ -26,6 +26,8 @@ public:
 
 	string getId();
 	AccountStatus getAccountStatus();
+	string getPassword(); //????
+	Person getPersonInfo();
 
 	void setId(string id);
 	void setAccountStatus(AccountStatus status);
@@ -33,6 +35,7 @@ public:
 	friend std::istream& operator>>(std::istream& in, Account& account);
 	friend std::ifstream& operator>>(std::ifstream& in, Account& account);
 	friend std::ostream& operator<<(std::ostream& out, const Account& account);
+	friend std::ofstream& operator<<(std::ofstream& out, const Account& account);
 
 	void listBook();
 };

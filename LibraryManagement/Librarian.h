@@ -18,6 +18,7 @@ public:
 
 	size_t getNumberOfMember();
 	bool searchMember(string id);
-	void showAllMember();
+	void listMember();
+	void xuatPhieuMuon(string bookcodem, string memberId);
 };
 

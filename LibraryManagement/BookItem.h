@@ -36,6 +36,7 @@ public:
 	friend std::ofstream& operator<<(std::ofstream& out, const BookItem& book);
 	
 	void viewBookInformation(std::ostream& out);
-	bool checkout();
+	static bool checkout(string barcode);
+	static bool returnBook(string barcode);
 };
 
